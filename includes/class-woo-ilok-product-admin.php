@@ -22,6 +22,8 @@ class WooIlokProductAdmin
         add_filter('woocommerce_product_data_tabs', array($this, 'add_ilok_tab'));
         add_action('woocommerce_product_data_panels', array($this, 'add_ilok_tab_content'));
         add_action('woocommerce_process_product_meta', array($this, 'save_ilok_data'));
+        add_action('woocommerce_admin_process_product_object', array($this, 'validate_ilok_data'), 10, 1);
+        add_action('admin_notices', array($this, 'display_validation_errors'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
@@ -50,6 +52,15 @@ class WooIlokProductAdmin
             return;
         }
 
+        // Validate before saving
+        $validation_errors = $this->validate_ilok_fields();
+        
+        if (!empty($validation_errors)) {
+            // Store errors in transient to display on redirect
+            set_transient('woo_ilok_validation_errors_' . $post_id, $validation_errors, 60);
+            return;
+        }
+
         // Save iLok Licensed checkbox
         $ilok_licensed = isset($_POST['_ilok_licensed']) && $_POST['_ilok_licensed'] === 'yes' ? 'yes' : 'no';
         update_post_meta($post_id, '_ilok_licensed', sanitize_text_field($ilok_licensed));
@@ -57,6 +68,66 @@ class WooIlokProductAdmin
         // Save SKU Guid field
         $ilok_sku_guid = isset($_POST['_ilok_sku_guid']) ? sanitize_text_field($_POST['_ilok_sku_guid']) : '';
         update_post_meta($post_id, '_ilok_sku_guid', $ilok_sku_guid);
+    }
+
+    public function validate_ilok_data($product)
+    {
+        // This hook is for WooCommerce 3.0+ compatibility
+        $validation_errors = $this->validate_ilok_fields();
+        
+        if (!empty($validation_errors)) {
+            foreach ($validation_errors as $error) {
+                WC_Admin_Meta_Boxes::add_error($error);
+            }
+        }
+    }
+
+    private function validate_ilok_fields()
+    {
+        $errors = array();
+        
+        $ilok_licensed = isset($_POST['_ilok_licensed']) && $_POST['_ilok_licensed'] === 'yes';
+        $ilok_sku_guid = isset($_POST['_ilok_sku_guid']) ? trim(sanitize_text_field($_POST['_ilok_sku_guid'])) : '';
+
+        // Validation rules from PRD
+        if ($ilok_licensed) {
+            // SKU Guid is required when iLok Licensed is enabled
+            if (empty($ilok_sku_guid)) {
+                $errors[] = __('SKU Guid is required when iLok Licensed is enabled.', 'woo-ilok-products');
+            } else {
+                // SKU Guid must be non-empty string when provided
+                if (strlen($ilok_sku_guid) === 0) {
+                    $errors[] = __('SKU Guid cannot be empty when iLok Licensed is enabled.', 'woo-ilok-products');
+                }
+                
+                // Maximum length: 255 characters
+                if (strlen($ilok_sku_guid) > 255) {
+                    $errors[] = __('SKU Guid cannot exceed 255 characters.', 'woo-ilok-products');
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    public function display_validation_errors()
+    {
+        global $post;
+        
+        if (!$post || $post->post_type !== 'product') {
+            return;
+        }
+
+        $errors = get_transient('woo_ilok_validation_errors_' . $post->ID);
+        
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                echo '<div class="notice notice-error is-dismissible"><p><strong>' . esc_html__('iLok Products Error:', 'woo-ilok-products') . '</strong> ' . esc_html($error) . '</p></div>';
+            }
+            
+            // Clear the transient after displaying
+            delete_transient('woo_ilok_validation_errors_' . $post->ID);
+        }
     }
 
     public function add_ilok_tab($tabs)

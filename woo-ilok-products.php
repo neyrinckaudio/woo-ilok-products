@@ -106,7 +106,41 @@ if (!class_exists('WooIlokProducts')) {
             new WooIlokProductAdmin();
             new WooIlokOrderHandler();
         }
+
+        public static function activate()
+        {
+            if (!class_exists('WooCommerce')) {
+                deactivate_plugins(plugin_basename(__FILE__));
+                wp_die(
+                    esc_html__('WooCommerce iLok Products requires WooCommerce to be installed and active.', 'woo-ilok-products'),
+                    esc_html__('Plugin Activation Error', 'woo-ilok-products'),
+                    array('back_link' => true)
+                );
+            }
+
+            if (class_exists('WooCommerce') && version_compare(WC_VERSION, '4.0', '<')) {
+                deactivate_plugins(plugin_basename(__FILE__));
+                wp_die(
+                    esc_html__('WooCommerce iLok Products requires WooCommerce version 4.0 or higher.', 'woo-ilok-products'),
+                    esc_html__('Plugin Activation Error', 'woo-ilok-products'),
+                    array('back_link' => true)
+                );
+            }
+
+            add_option('woo_ilok_products_version', WOO_ILOK_PRODUCTS_VERSION);
+            add_option('woo_ilok_products_activated_time', time());
+
+            flush_rewrite_rules();
+        }
+
+        public static function deactivate()
+        {
+            flush_rewrite_rules();
+        }
     }
+
+    register_activation_hook(__FILE__, array('WooIlokProducts', 'activate'));
+    register_deactivation_hook(__FILE__, array('WooIlokProducts', 'deactivate'));
 
     WooIlokProducts::get_instance();
 }

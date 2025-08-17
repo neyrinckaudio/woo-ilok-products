@@ -34,7 +34,7 @@ class WooIlokProductAdmin
             'id' => '_ilok_licensed',
             'label' => __('iLok Licensed', 'woo-ilok-products'),
             'description' => __('Check this box if this product requires iLok licensing.', 'woo-ilok-products'),
-            'value' => $ilok_licensed ? 'yes' : 'no',
+            'value' => $ilok_licensed,
             'cbvalue' => 'yes'
         ));
 

@@ -19,6 +19,8 @@ class WooIlokProductAdmin
     private function init_hooks()
     {
         add_action('woocommerce_product_options_general_product_data', array($this, 'add_ilok_checkbox'));
+        add_filter('woocommerce_product_data_tabs', array($this, 'add_ilok_tab'));
+        add_action('woocommerce_product_data_panels', array($this, 'add_ilok_tab_content'));
         add_action('woocommerce_process_product_meta', array($this, 'save_ilok_checkbox'));
     }
 
@@ -49,5 +51,28 @@ class WooIlokProductAdmin
 
         $ilok_licensed = isset($_POST['_ilok_licensed']) && $_POST['_ilok_licensed'] === 'yes' ? 'yes' : 'no';
         update_post_meta($post_id, '_ilok_licensed', sanitize_text_field($ilok_licensed));
+    }
+
+    public function add_ilok_tab($tabs)
+    {
+        $tabs['ilok_licensing'] = array(
+            'label' => __('iLok Licensing', 'woo-ilok-products'),
+            'target' => 'ilok_licensing_options',
+            'class' => array('show_if_ilok_licensed', 'hide_if_virtual'),
+            'priority' => 60
+        );
+
+        return $tabs;
+    }
+
+    public function add_ilok_tab_content()
+    {
+        echo '<div id="ilok_licensing_options" class="panel woocommerce_options_panel hidden">';
+        echo '<div class="options_group">';
+        
+        echo '<p>' . esc_html__('Configure iLok licensing settings for this product.', 'woo-ilok-products') . '</p>';
+        
+        echo '</div>';
+        echo '</div>';
     }
 }

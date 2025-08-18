@@ -99,12 +99,14 @@ if (!class_exists('WooIlokProducts')) {
         {
             require_once WOO_ILOK_PRODUCTS_PATH . 'includes/class-woo-ilok-product-admin.php';
             require_once WOO_ILOK_PRODUCTS_PATH . 'includes/class-woo-ilok-order-handler.php';
+            require_once WOO_ILOK_PRODUCTS_PATH . 'includes/class-woo-ilok-frontend.php';
         }
 
         private function init_hooks()
         {
             new WooIlokProductAdmin();
             new WooIlokOrderHandler();
+            new WooIlokFrontend();
         }
 
         public static function activate()

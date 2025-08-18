@@ -43,29 +43,34 @@ class WooIlokFrontend
         }
 
         ?>
-        <div class="woo-ilok-user-id-section" style="margin: 20px 0;">
+        <div class="woo-ilok-user-id-section">
+            <div class="woo-ilok-loading-overlay">
+                <div class="woo-ilok-spinner"></div>
+            </div>
             <div class="woo-ilok-user-id-field">
-                <label for="ilok_user_id"><?php esc_html_e('iLok User ID:', 'woo-ilok-products'); ?> <span style="color: red;">*</span></label>
-                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                <label for="ilok_user_id">
+                    <?php esc_html_e('iLok User ID:', 'woo-ilok-products'); ?> 
+                    <span style="color: #dc3232;">*</span>
+                </label>
+                <div class="woo-ilok-input-group">
                     <input type="text" 
                            autocomplete="off" 
                            autocapitalize="off"
+                           spellcheck="false"
                            id="ilok_user_id" 
                            name="ilok_user_id" 
                            placeholder="<?php esc_attr_e('Enter your iLok User ID', 'woo-ilok-products'); ?>"
                            maxlength="32" 
-                           style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" 
                            required />
                     <button type="button" 
                             id="validate_ilok_user_id" 
-                            class="button"
-                            style="padding: 8px 16px;">
-                        <?php esc_html_e('Validate', 'woo-ilok-products'); ?>
+                            class="woo-ilok-validate-btn">
+                        <span class="btn-text"><?php esc_html_e('Validate', 'woo-ilok-products'); ?></span>
                     </button>
                 </div>
                 <input type="hidden" id="ilok_user_id_validated" name="ilok_user_id_validated" value="0" />
-                <div id="ilok_validation_message" style="margin-top: 10px; font-size: 14px;"></div>
-                <p class="description" style="margin-top: 5px; font-size: 12px; color: #666;">
+                <div id="ilok_validation_message"></div>
+                <p class="woo-ilok-description">
                     <?php echo wp_kses(__('Your iLok User ID is required. If you do not have an iLok User ID, create an account at <a href="https://www.ilok.com/#!registration" target="_blank">iLok.com</a>.', 'woo-ilok-products'), array('a' => array('href' => array(), 'target' => array()))); ?>
                 </p>
             </div>
@@ -177,7 +182,7 @@ class WooIlokFrontend
     }
 
     /**
-     * Enqueue frontend scripts
+     * Enqueue frontend scripts and styles
      */
     public function enqueue_frontend_scripts()
     {
@@ -190,6 +195,15 @@ class WooIlokFrontend
             return;
         }
 
+        // Enqueue CSS
+        wp_enqueue_style(
+            'woo-ilok-frontend',
+            WOO_ILOK_PRODUCTS_URL . 'assets/css/frontend.css',
+            array(),
+            WOO_ILOK_PRODUCTS_VERSION
+        );
+
+        // Enqueue JavaScript
         wp_enqueue_script(
             'woo-ilok-frontend',
             WOO_ILOK_PRODUCTS_URL . 'assets/js/frontend-validation.js',
@@ -206,7 +220,8 @@ class WooIlokFrontend
                 'valid' => __('iLok User ID is valid!', 'woo-ilok-products'),
                 'invalid' => __('Invalid iLok User ID.', 'woo-ilok-products'),
                 'error' => __('Validation error. Please try again.', 'woo-ilok-products'),
-                'required' => __('Please enter your iLok User ID.', 'woo-ilok-products')
+                'required' => __('Please enter your iLok User ID.', 'woo-ilok-products'),
+                'format_error' => __('Invalid format. Must be 32 characters or less with no spaces.', 'woo-ilok-products')
             )
         ));
     }
@@ -258,9 +273,10 @@ class WooIlokFrontend
      */
     private function validate_with_edenremote($user_id)
     {
-        // Check if wp-edenremote plugin is available
-        if (!function_exists('wp_edenremote_validate_user_id')) {
+        // Check if wp-edenremote plugin is available using method_exists
+        if (!method_exists('WPEdenRemote', 'findUserByAccountId')) {
             // Fallback: basic validation without external service
+            error_log('WooCommerce iLok Products: wp-edenremote plugin not available, using basic validation for User ID: ' . $user_id);
             return array(
                 'success' => true,
                 'message' => __('iLok User ID format is valid (external validation not available).', 'woo-ilok-products')
@@ -268,25 +284,36 @@ class WooIlokFrontend
         }
 
         try {
-            // Call wp-edenremote validation function
-            $result = wp_edenremote_validate_user_id($user_id);
+            // Use wp-edenremote to validate the user ID
+            $result = \WPEdenRemote::findUserByAccountId($user_id);
             
-            if ($result && isset($result['valid']) && $result['valid']) {
-                return array(
-                    'success' => true,
-                    'message' => __('iLok User ID is valid!', 'woo-ilok-products')
-                );
+            if (isset($result['httpcode'])) {
+                if ($result['httpcode'] === 200) {
+                    return array(
+                        'success' => true,
+                        'message' => __('iLok User ID is valid!', 'woo-ilok-products')
+                    );
+                } else {
+                    error_log('WooCommerce iLok Products: Validation failed for User ID: ' . $user_id . ' - HTTP Code: ' . $result['httpcode']);
+                    return array(
+                        'success' => false,
+                        'message' => __('Invalid iLok User ID. Please check and try again.', 'woo-ilok-products')
+                    );
+                }
             } else {
-                $error_message = isset($result['message']) ? $result['message'] : __('Invalid iLok User ID.', 'woo-ilok-products');
+                error_log('WooCommerce iLok Products: Unexpected response format for User ID: ' . $user_id);
                 return array(
                     'success' => false,
-                    'message' => $error_message
+                    'message' => __('Validation service error. Please try again.', 'woo-ilok-products')
                 );
             }
         } catch (Exception $e) {
+            // Log the exception for debugging
+            error_log('WooCommerce iLok Products: Exception during validation for User ID: ' . $user_id . ' - ' . $e->getMessage());
+            
             return array(
                 'success' => false,
-                'message' => __('Validation service error. Please try again.', 'woo-ilok-products')
+                'message' => __('Validation service temporarily unavailable. Please try again in a moment.', 'woo-ilok-products')
             );
         }
     }

@@ -45,20 +45,25 @@ jQuery(document).ready(function($) {
         const userId = $('#ilok_user_id').val().trim();
         const messageDiv = $('#ilok_validation_message');
         const validateButton = $('#validate_ilok_user_id');
+        const userIdInput = $('#ilok_user_id');
+        const loadingOverlay = $('.woo-ilok-loading-overlay');
 
         if (!userId) {
             showMessage(woo_ilok_ajax.messages.required, 'error');
+            userIdInput.removeClass('valid').addClass('error');
             return;
         }
 
         // Client-side validation
         if (userId.length > 32) {
-            showMessage('iLok User ID must be 32 characters or less.', 'error');
+            showMessage(woo_ilok_ajax.messages.format_error, 'error');
+            userIdInput.removeClass('valid').addClass('error');
             return;
         }
 
         if (userId.indexOf(' ') !== -1) {
-            showMessage('iLok User ID cannot contain spaces.', 'error');
+            showMessage(woo_ilok_ajax.messages.format_error, 'error');
+            userIdInput.removeClass('valid').addClass('error');
             return;
         }
 
@@ -67,8 +72,10 @@ jQuery(document).ready(function($) {
         }
 
         isValidating = true;
-        validateButton.prop('disabled', true);
+        validateButton.prop('disabled', true).addClass('validating');
+        userIdInput.removeClass('valid error');
         showMessage(woo_ilok_ajax.messages.validating, 'info');
+        loadingOverlay.addClass('active');
 
         // AJAX validation
         $.ajax({
@@ -84,42 +91,43 @@ jQuery(document).ready(function($) {
                     validatedUserId = userId;
                     $('#ilok_user_id_validated').val('1');
                     showMessage(response.data.message, 'success');
+                    userIdInput.addClass('valid');
                     updateAddToCartButton(true);
                 } else {
                     showMessage(response.data.message, 'error');
                     $('#ilok_user_id_validated').val('0');
+                    userIdInput.addClass('error');
                     updateAddToCartButton(false);
                 }
             },
             error: function() {
                 showMessage(woo_ilok_ajax.messages.error, 'error');
                 $('#ilok_user_id_validated').val('0');
+                userIdInput.addClass('error');
                 updateAddToCartButton(false);
             },
             complete: function() {
                 isValidating = false;
-                validateButton.prop('disabled', false);
+                validateButton.prop('disabled', false).removeClass('validating');
+                loadingOverlay.removeClass('active');
             }
         });
     }
 
     function showMessage(message, type) {
         const messageDiv = $('#ilok_validation_message');
-        const colors = {
-            'success': '#46b450',
-            'error': '#dc3232',
-            'info': '#00a0d2'
-        };
-
-        messageDiv.html(message)
-                 .css('color', colors[type] || '#666')
-                 .show();
+        
+        messageDiv.removeClass('success error info')
+                 .addClass(type)
+                 .html(message)
+                 .slideDown(300);
     }
 
     function resetValidation() {
         validatedUserId = null;
         $('#ilok_user_id_validated').val('0');
-        $('#ilok_validation_message').hide();
+        $('#ilok_validation_message').slideUp(200);
+        $('#ilok_user_id').removeClass('valid error');
         updateAddToCartButton(false);
     }
 

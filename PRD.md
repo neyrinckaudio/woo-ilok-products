@@ -11,6 +11,7 @@
 
 WooCommerce store owners selling digital audio software that requires iLok licensing need a way to:
 - Configure products with iLok licensing information
+- Configure order item with iLok User ID when adding to cart
 - Store licensing metadata that can be accessed by other plugins
 - Manage iLok-specific product data within the existing WooCommerce workflow
 
@@ -20,6 +21,7 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 - WooCommerce store administrators
 - Digital audio software vendors
 - Plugin developers integrating with iLok licensing systems
+- Customers adding iLok licensed products to the Cart
 
 **Secondary Users:**
 - Other WordPress plugins that handle iLok license fulfillment
@@ -39,7 +41,14 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 - **Tab Name:** "iLok Licensing"
 - **Location:** Among product data tabs (General, Inventory, Shipping, etc.)
 
-#### 4.2 iLok Metadata Fields
+#### 4.2 Shopping Add To Cart Interface
+**Feature:** iLok User ID text field and Validate button
+- **Location:** Above Add To Cart related fields
+- **Availability:** For products that are configured with iLok licensing
+- **Functionality:** Validate iLok User ID
+- **Default State:** Empty
+
+#### 4.3 iLok Metadata Fields
 
 **SKU Guid Field**
 - **Field Type:** Text input
@@ -49,6 +58,14 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 - **Metadata Key:** `ilok_sku_guid`
 - **Storage:** WordPress post meta for the product
 
+**iLok User ID Field**
+- **Field Type:** Text input
+- **Label:** "iLok User ID"
+- **Validation:** Required before product is added to cart
+- **Character Limit:** 32 characters
+- **Metadata Key:** `iLok User ID`
+- **Storage:** WordPress order item meta for the order
+
 #### 4.3 Data Storage & Integration
 
 **Product Meta Storage:**
@@ -56,6 +73,7 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 - `ilok_sku_guid`: String - the SKU Guid value
 
 **Order Item Meta Storage:**
+- `iLok User ID`: String - the iLok User ID value
 - When an iLok-licensed product is purchased, copy relevant metadata to order item meta
 - Metadata keys maintained for consistency with product meta
 - Available for other plugins via standard WooCommerce order item meta functions
@@ -87,6 +105,7 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 - Consistent with WooCommerce admin UI/UX patterns
 
 #### 6.2 Customer-Facing Experience
+- **Add To Cart:** Customer must enter and validate their iLok USER ID
 - **Checkout:** No changes to customer checkout experience
 - **Order Details:** iLok metadata not visible to customers
 - **Emails:** No modifications to order confirmation emails
@@ -103,14 +122,18 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 6. Product meta is stored: `ilok_licensed` and `ilok_sku_guid`
 
 #### 7.2 Order Processing Workflow
-1. Customer purchases iLok-licensed product
-2. During order processing, plugin detects iLok-licensed items
-3. Copies product iLok metadata to order item metadata
-4. Order item meta available for other plugins via WooCommerce APIs
-5. No customer-visible changes to order completion
+1. Customer clicks on a product at the store
+2. At the product page, for iLok-licensed products, the customer enters their iLok User ID and presses the Validate button
+3. Once the iLok User ID has been validated, the customer clicks 'Add To Cart'
+4. Customer goes to Checkout and purchases the order
+5. During order processing, plugin detects iLok-licensed items
+6. Copies product iLok metadata to order item metadata
+7. Order item meta available for other plugins via WooCommerce APIs
+8. No customer-visible changes to order completion
 
 #### 7.3 Integration Points
 - **Product Save:** Hook into `woocommerce_process_product_meta`
+- **Add Product To Cart:** TBD
 - **Order Processing:** Hook into `woocommerce_checkout_create_order_line_item`
 - **Admin Interface:** Use `woocommerce_product_data_panels` and related hooks
 
@@ -125,12 +148,21 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 // Order Item Meta (copied from product)
 'ilok_licensed' => '1' | '0'
 'ilok_sku_guid' => 'string'
+
+// Order Item Meta (entered when adding to cart)
+'iLok User ID' => 'string'
 ```
 
-#### 8.2 Validation Rules
+#### 8.2 SKU Guid Validation Rules
 - SKU Guid is required when iLok Licensed is enabled
 - SKU Guid must be non-empty string when provided
 - Maximum length: 255 characters
+
+#### 8.3 iLok User ID Validation Rules
+- iLok User ID is required to add an iLok Licensed enabled product to cart
+- iLok User ID must be non-empty string with no spaces
+- iLok User ID must be validate with the wp-edenremote plugin API
+- Maximum length: 32 characters
 
 ### 9. Security Considerations
 
@@ -169,7 +201,6 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 
 ### 13. Constraints & Limitations
 
-- No customer-facing functionality in initial version
 - Single SKU Guid per product (no multi-license support)
 - No automatic license fulfillment (metadata only)
 - Requires manual product configuration
@@ -183,19 +214,23 @@ WooCommerce store owners selling digital audio software that requires iLok licen
 - [ ] "SKU Guid" field accepts and saves text input
 - [ ] Validation prevents saving when SKU Guid is empty and iLok Licensed is checked
 
-#### 14.2 Data Handling
+#### 14.2 Shop Add To Cart
+- [ ] "iLok User ID" text field and "Validate" button appears above Add To Cart section if the product is iLok licensed
+- [ ] Validation prevents adding product to cart
+
+#### 14.3 Data Handling
 - [ ] Product metadata saved correctly with proper keys
 - [ ] Order item metadata populated on purchase
 - [ ] Metadata accessible via standard WooCommerce functions
 - [ ] No data corruption or loss during order processing
 
-#### 14.3 User Interface
+#### 14.4 User Interface
 - [ ] Interface elements match WooCommerce styling
 - [ ] No JavaScript errors in browser console
 - [ ] Responsive design works on mobile devices
 - [ ] Clear validation messages displayed to users
 
-#### 14.4 Compatibility
+#### 14.5 Compatibility
 - [ ] Plugin activates without PHP errors
 - [ ] No conflicts with popular WooCommerce extensions
 - [ ] Works across supported WordPress/WooCommerce versions

@@ -47,63 +47,87 @@
 - Copy product metadata to order item metadata
 - Maintain consistent metadata keys
 
+### 10. Add iLok User ID field and validation to product pages
+- Display iLok User ID text field on product pages for iLok-licensed products
+- Add "Validate" button next to the field
+- Position above Add To Cart section
+- Implement 32 character limit validation
+
+### 11. Implement iLok User ID validation with wp-edenremote plugin
+- Integrate with wp-edenremote plugin API for validation
+- Validate that iLok User ID is non-empty string with no spaces
+- Show validation feedback to customer
+- Only allow add to cart after successful validation
+
+### 12. Prevent add to cart without valid iLok User ID
+- Hook into add to cart process
+- Block cart addition for iLok-licensed products without validated User ID
+- Display appropriate error messages to customers
+- Store validated iLok User ID in cart/session
+
+### 13. Store iLok User ID in order item metadata
+- Save iLok User ID to order item meta during checkout
+- Use metadata key: 'iLok User ID'
+- Ensure data persists through order completion
+- Make accessible via standard WooCommerce functions
+
 ## Medium Priority Tasks
 
-### 10. Add proper input sanitization and data escaping
+### 14. Add proper input sanitization and data escaping
 - Sanitize all user inputs
 - Escape output data properly
 - Follow WordPress security best practices
 
-### 11. Implement nonce verification for form submissions
+### 15. Implement nonce verification for form submissions
 - Add nonce fields to forms
 - Verify nonces on form processing
 - Ensure CSRF protection
 
-### 12. Add capability checks for product editing permissions
+### 16. Add capability checks for product editing permissions
 - Check user capabilities before processing
 - Ensure only authorized users can edit
 - Follow WooCommerce permission patterns
 
-### 13. Style interface elements to match WooCommerce admin UI
+### 17. Style interface elements to match WooCommerce admin UI
 - Apply consistent styling
 - Match WooCommerce admin patterns
 - Ensure visual integration
 
-### 14. Test plugin with all WooCommerce product types (Simple, Variable, Grouped, External)
+### 18. Test plugin with all WooCommerce product types (Simple, Variable, Grouped, External)
 - Test Simple products
 - Test Variable products
 - Test Grouped products
 - Test External/Affiliate products
 
-### 15. Test WordPress/WooCommerce version compatibility
+### 19. Test WordPress/WooCommerce version compatibility
 - Test minimum WordPress 5.0
 - Test minimum WooCommerce 4.0
 - Test with latest versions
 - Verify PHP 7.4+ compatibility
 
-### 16. Verify metadata is accessible via standard WooCommerce functions
+### 20. Verify metadata is accessible via standard WooCommerce functions
 - Test metadata retrieval from products
 - Test metadata retrieval from order items
 - Verify API compatibility for other plugins
 
-### 17. Test order processing workflow with iLok-licensed products
+### 21. Test order processing workflow with iLok-licensed products
 - Test complete purchase flow
 - Verify metadata copying
 - Ensure no customer-facing changes
 
 ## Low Priority Tasks
 
-### 18. Add plugin uninstall cleanup functionality
+### 22. Add plugin uninstall cleanup functionality
 - Create uninstall hook
 - Clean up plugin metadata
 - Remove any plugin-specific data
 
-### 19. Test for conflicts with popular WooCommerce extensions
+### 23. Test for conflicts with popular WooCommerce extensions
 - Test with common plugins
 - Verify no hook conflicts
 - Ensure stable operation
 
-### 20. Verify responsive design works on mobile devices
+### 24. Verify responsive design works on mobile devices
 - Test admin interface on mobile
 - Ensure usability on small screens
 - Verify touch interaction compatibility
@@ -117,11 +141,19 @@
 - [ ] "SKU Guid" field accepts and saves text input
 - [ ] Validation prevents saving when SKU Guid is empty and iLok Licensed is checked
 
+### Shop Add To Cart
+- [ ] "iLok User ID" text field and "Validate" button appears above Add To Cart section if the product is iLok licensed
+- [ ] Validation prevents adding product to cart without valid iLok User ID
+- [ ] Integration with wp-edenremote plugin API works correctly
+- [ ] Error messages displayed for invalid or missing iLok User ID
+- [ ] 32 character limit enforced on iLok User ID field
+
 ### Data Handling
 - [ ] Product metadata saved correctly with proper keys
-- [ ] Order item metadata populated on purchase
+- [ ] Order item metadata populated on purchase (including iLok User ID)
 - [ ] Metadata accessible via standard WooCommerce functions
 - [ ] No data corruption or loss during order processing
+- [ ] iLok User ID properly stored in order item meta with key 'iLok User ID'
 
 ### User Interface
 - [ ] Interface elements match WooCommerce styling

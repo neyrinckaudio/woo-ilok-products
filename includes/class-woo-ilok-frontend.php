@@ -63,7 +63,7 @@ class WooIlokFrontend
                 </div>
                 <div id="ilok_validation_message" style="margin-top: 10px; font-size: 14px;"></div>
                 <p class="description" style="margin-top: 5px; font-size: 12px; color: #666;">
-                    <?php esc_html_e('Your iLok User ID is required to purchase this product. Maximum 32 characters, no spaces allowed.', 'woo-ilok-products'); ?>
+                    <?php echo wp_kses(__('Your iLok User ID is required. If you do not have an iLok User ID, create an account at <a href="https://www.ilok.com/#!registration" target="_blank">iLok.com</a>.', 'woo-ilok-products'), array('a' => array('href' => array(), 'target' => array()))); ?>
                 </p>
             </div>
         </div>

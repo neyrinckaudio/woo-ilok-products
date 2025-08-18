@@ -82,15 +82,18 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     validatedUserId = userId;
+                    $('#ilok_user_id_validated').val('1');
                     showMessage(response.data.message, 'success');
                     updateAddToCartButton(true);
                 } else {
                     showMessage(response.data.message, 'error');
+                    $('#ilok_user_id_validated').val('0');
                     updateAddToCartButton(false);
                 }
             },
             error: function() {
                 showMessage(woo_ilok_ajax.messages.error, 'error');
+                $('#ilok_user_id_validated').val('0');
                 updateAddToCartButton(false);
             },
             complete: function() {
@@ -115,6 +118,7 @@ jQuery(document).ready(function($) {
 
     function resetValidation() {
         validatedUserId = null;
+        $('#ilok_user_id_validated').val('0');
         $('#ilok_validation_message').hide();
         updateAddToCartButton(false);
     }

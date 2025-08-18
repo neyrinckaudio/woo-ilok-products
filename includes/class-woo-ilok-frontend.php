@@ -11,8 +11,8 @@ class WooIlokFrontend
 
     private function init_hooks()
     {
-        // Add iLok User ID field to product pages
-        add_action('woocommerce_single_product_summary', array($this, 'display_ilok_user_id_field'), 25);
+        // Add iLok User ID field to product pages - use a hook that's inside the form
+        add_action('woocommerce_before_add_to_cart_button', array($this, 'display_ilok_user_id_field'));
         
         // Prevent add to cart without valid iLok User ID
         add_filter('woocommerce_add_to_cart_validation', array($this, 'validate_ilok_user_id_before_cart'), 10, 3);
@@ -63,6 +63,7 @@ class WooIlokFrontend
                         <?php esc_html_e('Validate', 'woo-ilok-products'); ?>
                     </button>
                 </div>
+                <input type="hidden" id="ilok_user_id_validated" name="ilok_user_id_validated" value="0" />
                 <div id="ilok_validation_message" style="margin-top: 10px; font-size: 14px;"></div>
                 <p class="description" style="margin-top: 5px; font-size: 12px; color: #666;">
                     <?php echo wp_kses(__('Your iLok User ID is required. If you do not have an iLok User ID, create an account at <a href="https://www.ilok.com/#!registration" target="_blank">iLok.com</a>.', 'woo-ilok-products'), array('a' => array('href' => array(), 'target' => array()))); ?>
@@ -99,6 +100,7 @@ class WooIlokFrontend
         }
 
         $ilok_user_id = isset($_POST['ilok_user_id']) ? sanitize_text_field($_POST['ilok_user_id']) : '';
+        $is_validated = isset($_POST['ilok_user_id_validated']) ? sanitize_text_field($_POST['ilok_user_id_validated']) : '0';
         
         if (empty($ilok_user_id)) {
             wc_add_notice(__('iLok User ID is required for this product.', 'woo-ilok-products'), 'error');
@@ -111,9 +113,9 @@ class WooIlokFrontend
             return false;
         }
 
-        // Check if User ID was validated via AJAX
+        // Check if User ID was validated via AJAX or hidden field
         $validated_user_id = WC()->session->get('validated_ilok_user_id');
-        if ($validated_user_id !== $ilok_user_id) {
+        if ($validated_user_id !== $ilok_user_id && $is_validated !== '1') {
             wc_add_notice(__('Please validate your iLok User ID before adding to cart.', 'woo-ilok-products'), 'error');
             return false;
         }

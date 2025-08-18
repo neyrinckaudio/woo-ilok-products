@@ -48,6 +48,8 @@ class WooIlokFrontend
                 <label for="ilok_user_id"><?php esc_html_e('iLok User ID:', 'woo-ilok-products'); ?> <span style="color: red;">*</span></label>
                 <div style="display: flex; gap: 10px; margin-top: 5px;">
                     <input type="text" 
+                           autocomplete="off" 
+                           autocapitalize="off"
                            id="ilok_user_id" 
                            name="ilok_user_id" 
                            placeholder="<?php esc_attr_e('Enter your iLok User ID', 'woo-ilok-products'); ?>"

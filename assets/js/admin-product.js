@@ -3,8 +3,9 @@ jQuery(document).ready(function($) {
 
     // Function to toggle iLok tab visibility
     function toggleIlokTab() {
-        var isChecked = $('#_ilok_licensed').is(':checked');
-        var ilokTab = $('.ilok_licensing_tab');
+        var isChecked = $('#ilok_product').is(':checked');
+        // Try multiple selectors to find the tab
+        var ilokTab = $('.woocommerce_options_panel ul li.ilok_licensing_tab, li.ilok_licensing_tab, .ilok_licensing_tab');
         var ilokPanel = $('#ilok_licensing_options');
 
         if (isChecked) {
@@ -13,16 +14,18 @@ jQuery(document).ready(function($) {
             ilokTab.hide();
             // If the iLok tab is currently active, switch to General tab
             if (ilokTab.hasClass('active')) {
-                $('.general_tab a').trigger('click');
+                $('.woocommerce_options_panel ul li.general_options a, li.general_options a, .general_tab a').trigger('click');
             }
         }
     }
 
-    // Initial check on page load
-    toggleIlokTab();
+    // Wait for WooCommerce to initialize, then run initial check
+    setTimeout(function() {
+        toggleIlokTab();
+    }, 100);
 
     // Listen for checkbox changes
-    $('#_ilok_licensed').on('change', function() {
+    $('#ilok_product').on('change', function() {
         toggleIlokTab();
     });
 
@@ -30,6 +33,6 @@ jQuery(document).ready(function($) {
     $('select#product-type').on('change', function() {
         setTimeout(function() {
             toggleIlokTab();
-        }, 100);
+        }, 200);
     });
 });

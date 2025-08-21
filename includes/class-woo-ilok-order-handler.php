@@ -48,16 +48,16 @@ class WooIlokOrderHandler
     private function add_ilok_metadata_to_order_item($item, $product_id)
     {
         // Get iLok metadata from product
-        $ilok_licensed = get_post_meta($product_id, '_ilok_licensed', true);
-        $ilok_sku_guid = get_post_meta($product_id, '_ilok_sku_guid', true);
+        $ilok_licensed = get_post_meta($product_id, 'ilok_product', true);
+        $ilok_sku_guid = get_post_meta($product_id, 'ilok_sku_guid', true);
 
         // Only add metadata if product is iLok licensed
-        if ($ilok_licensed === 'yes') {
+        if ($ilok_licensed) {
             // Copy metadata to order item with consistent keys
-            $item->add_meta_data('_ilok_licensed', $ilok_licensed, true);
+            $item->add_meta_data('ilok_product', (bool) $ilok_licensed, true);
             
             if (!empty($ilok_sku_guid)) {
-                $item->add_meta_data('_ilok_sku_guid', $ilok_sku_guid, true);
+                $item->add_meta_data('ilok_sku_guid', $ilok_sku_guid, true);
             }
             
             // Save the item to persist metadata

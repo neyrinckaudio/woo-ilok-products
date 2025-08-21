@@ -14,7 +14,7 @@ This is a WordPress plugin called "woo-ilok-products" that extends WooCommerce t
 - ✅ "iLok Licensing" tab with progressive disclosure
 - ✅ SKU Guid field with 255 character limit
 - ✅ Server-side validation (required field, length limits)
-- ✅ Product metadata saving (`_ilok_licensed`, `_ilok_sku_guid`)
+- ✅ Product metadata saving (`ilok_product`, `ilok_sku_guid`)
 - ✅ Order processing - metadata copy to order items
 - ✅ JavaScript for dynamic tab show/hide
 - ✅ Customer-facing iLok User ID field on product pages
@@ -75,12 +75,12 @@ woo-ilok-products/
 ### Metadata Schema
 ```php
 // Product Meta
-'_ilok_licensed' => 'yes' | 'no'    // String values for WooCommerce compatibility
-'_ilok_sku_guid' => 'string'        // SKU Guid value (max 255 chars)
+'ilok_product' => true | false    // Boolean values
+'ilok_sku_guid' => 'string'        // SKU Guid value (max 255 chars)
 
 // Order Item Meta (copied from product)
-'_ilok_licensed' => 'yes' | 'no'
-'_ilok_sku_guid' => 'string'
+'ilok_product' => true | false
+'ilok_sku_guid' => 'string'
 
 // Order Item Meta (entered by customer during add to cart)
 'iLok User ID' => 'string'          // Customer's iLok User ID (max 32 chars, no spaces)

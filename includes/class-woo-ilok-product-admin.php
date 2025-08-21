@@ -31,15 +31,15 @@ class WooIlokProductAdmin
     {
         global $post;
 
-        $ilok_licensed = get_post_meta($post->ID, '_ilok_licensed', true);
+        $ilok_licensed = get_post_meta($post->ID, 'ilok_product', true);
 
         echo '<div class="options_group">';
         
         woocommerce_wp_checkbox(array(
-            'id' => '_ilok_licensed',
+            'id' => 'ilok_product',
             'label' => __('iLok Licensed', 'woo-ilok-products'),
             'description' => __('Check this box if this product requires iLok licensing.', 'woo-ilok-products'),
-            'value' => $ilok_licensed,
+            'value' => $ilok_licensed ? 'yes' : 'no',
             'cbvalue' => 'yes'
         ));
 
@@ -62,12 +62,12 @@ class WooIlokProductAdmin
         }
 
         // Save iLok Licensed checkbox
-        $ilok_licensed = isset($_POST['_ilok_licensed']) && $_POST['_ilok_licensed'] === 'yes' ? 'yes' : 'no';
-        update_post_meta($post_id, '_ilok_licensed', sanitize_text_field($ilok_licensed));
+        $ilok_licensed = isset($_POST['ilok_product']) && $_POST['ilok_product'] === 'yes';
+        update_post_meta($post_id, 'ilok_product', $ilok_licensed);
 
         // Save SKU Guid field
-        $ilok_sku_guid = isset($_POST['_ilok_sku_guid']) ? sanitize_text_field($_POST['_ilok_sku_guid']) : '';
-        update_post_meta($post_id, '_ilok_sku_guid', $ilok_sku_guid);
+        $ilok_sku_guid = isset($_POST['ilok_sku_guid']) ? sanitize_text_field($_POST['ilok_sku_guid']) : '';
+        update_post_meta($post_id, 'ilok_sku_guid', $ilok_sku_guid);
     }
 
     public function validate_ilok_data($product)
@@ -86,8 +86,8 @@ class WooIlokProductAdmin
     {
         $errors = array();
         
-        $ilok_licensed = isset($_POST['_ilok_licensed']) && $_POST['_ilok_licensed'] === 'yes';
-        $ilok_sku_guid = isset($_POST['_ilok_sku_guid']) ? trim(sanitize_text_field($_POST['_ilok_sku_guid'])) : '';
+        $ilok_licensed = isset($_POST['ilok_product']) && $_POST['ilok_product'] === 'yes';
+        $ilok_sku_guid = isset($_POST['ilok_sku_guid']) ? trim(sanitize_text_field($_POST['ilok_sku_guid'])) : '';
 
         // Validation rules from PRD
         if ($ilok_licensed) {
@@ -152,7 +152,7 @@ class WooIlokProductAdmin
         echo '<p>' . esc_html__('Configure iLok licensing settings for this product.', 'woo-ilok-products') . '</p>';
         
         woocommerce_wp_text_input(array(
-            'id' => '_ilok_sku_guid',
+            'id' => 'ilok_sku_guid',
             'label' => __('SKU Guid', 'woo-ilok-products'),
             'description' => __('Enter the iLok SKU Guid for this product. This field is required when iLok Licensed is enabled.', 'woo-ilok-products'),
             'desc_tip' => true,
@@ -160,7 +160,7 @@ class WooIlokProductAdmin
             'custom_attributes' => array(
                 'maxlength' => '255'
             ),
-            'value' => get_post_meta($post->ID, '_ilok_sku_guid', true)
+            'value' => get_post_meta($post->ID, 'ilok_sku_guid', true)
         ));
         
         echo '</div>';

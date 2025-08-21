@@ -88,9 +88,9 @@ class WooIlokFrontend
         }
 
         $product_id = $product->get_id();
-        $is_ilok_licensed = get_post_meta($product_id, '_ilok_licensed', true);
+        $is_ilok_licensed = get_post_meta($product_id, 'ilok_product', true);
         
-        return 'yes' === $is_ilok_licensed;
+        return (bool) $is_ilok_licensed;
     }
 
     /**

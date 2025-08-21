@@ -38,7 +38,16 @@ class WooIlokFrontend
     {
         global $product;
 
-        if (!$product || !$this->is_ilok_licensed_product($product)) {
+        // Ensure we have a valid product object
+        if (!$product || !is_object($product) || !method_exists($product, 'get_id')) {
+            // Try to get the product from the current post
+            $product = wc_get_product(get_the_ID());
+            if (!$product) {
+                return;
+            }
+        }
+
+        if (!$this->is_ilok_licensed_product($product)) {
             return;
         }
 
@@ -83,7 +92,7 @@ class WooIlokFrontend
      */
     private function is_ilok_licensed_product($product)
     {
-        if (!$product) {
+        if (!$product || !is_object($product) || !method_exists($product, 'get_id')) {
             return false;
         }
 
@@ -191,6 +200,16 @@ class WooIlokFrontend
         }
 
         global $product;
+        
+        // Ensure we have a valid product object
+        if (!$product || !is_object($product) || !method_exists($product, 'get_id')) {
+            // Try to get the product from the current post
+            $product = wc_get_product(get_the_ID());
+            if (!$product) {
+                return;
+            }
+        }
+        
         if (!$this->is_ilok_licensed_product($product)) {
             return;
         }
